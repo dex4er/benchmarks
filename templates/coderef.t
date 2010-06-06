@@ -1,6 +1,9 @@
 #!/usr/bin/perl
 
-use Benchmark ':all';
+use Test::More tests => 1;
+use Test::Differences;
+
+use Perl6::Slurp;
 
 my $generator = sub {
     return << 'END';
@@ -232,10 +235,18 @@ CPAN master site hosted by
 END
 };
 
+my $a = slurp 'www.cpan.org.html';
+my $b = $generator->();
+
+eq_or_diff $b, $a;
+
+
+use Benchmark ':all';
+
 my $r = timethese ($ARGV[0] || -1, { $0 => sub {
 
     $generator->();
 
-} } );
-
-cmpthese $r, 'all';
+} }, 'none' );
+my $s = cmpthese $r, 'none';
+diag($s->[1][1]);
